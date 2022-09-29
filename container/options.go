@@ -124,6 +124,7 @@ type options struct {
 	// border is the border around the container.
 	border            linestyle.LineStyle
 	borderTitle       string
+	richBorderTitle   *cell.RichTextString
 	borderTitleHAlign align.Horizontal
 
 	// padding is a space reserved between the outer edge of the container and
@@ -706,6 +707,13 @@ func Border(ls linestyle.LineStyle) Option {
 func BorderTitle(title string) Option {
 	return option(func(c *Container) error {
 		c.opts.borderTitle = title
+		return nil
+	})
+}
+
+func RichBorderTitle(title *cell.RichTextString) Option {
+	return option(func(c *Container) error {
+		c.opts.richBorderTitle = title
 		return nil
 	})
 }

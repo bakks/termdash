@@ -118,3 +118,55 @@ func Dim() Option {
 		co.Dim = true
 	})
 }
+
+type RichTextString struct {
+	text    string
+	opt     []*Options
+	fgColor Color
+}
+
+func (this *RichTextString) Text() string {
+	return this.text
+}
+
+func (this *RichTextString) Opts(offset int) *Options {
+	if offset >= len(this.opt) {
+		return nil
+	}
+	return this.opt[offset]
+}
+
+func (this *RichTextString) AddText(txt string) *RichTextString {
+	this.text = this.text + txt
+	return this
+}
+
+func (this *RichTextString) ResetColor() *RichTextString {
+	newOpt := NewOptions(FgColor(this.fgColor))
+	this.addOpt(newOpt)
+	return this
+}
+
+func (this *RichTextString) SetFgColor(clr Color) *RichTextString {
+	newOpt := NewOptions(FgColor(clr))
+	this.addOpt(newOpt)
+	return this
+}
+
+// TODO merge options
+func (this *RichTextString) addOpt(opts *Options) {
+	newOpts := make([]*Options, len(this.text))
+	copy(newOpts, this.opt)
+	newOpts = append(newOpts, opts)
+	this.opt = newOpts
+}
+
+func NewRichTextString(defaultFgColor Color) *RichTextString {
+	text := &RichTextString{
+		text:    "",
+		opt:     []*Options{},
+		fgColor: defaultFgColor,
+	}
+	text.addOpt(NewOptions(FgColor(defaultFgColor)))
+	return text
+}

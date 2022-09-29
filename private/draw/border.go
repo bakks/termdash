@@ -38,6 +38,7 @@ type borderOptions struct {
 	cellOpts      []cell.Option
 	lineStyle     linestyle.LineStyle
 	title         string
+	richTitle     *cell.RichTextString
 	titleOM       OverrunMode
 	titleCellOpts []cell.Option
 	titleHAlign   align.Horizontal
@@ -74,6 +75,12 @@ func BorderTitle(title string, overrun OverrunMode, opts ...cell.Option) BorderO
 		bOpts.title = title
 		bOpts.titleOM = overrun
 		bOpts.titleCellOpts = opts
+	})
+}
+
+func RichBorderTitle(richTitle *cell.RichTextString) BorderOption {
+	return borderOption(func(bOpts *borderOptions) {
+		bOpts.richTitle = richTitle
 	})
 }
 
@@ -126,6 +133,15 @@ func drawTitle(c *canvas.Canvas, border image.Rectangle, opt *borderOptions) err
 		return err
 	}
 
+	if opt.richTitle != nil {
+		return RichText(
+			c, opt.richTitle, start,
+			TextCellOpts(opt.titleCellOpts...),
+			TextOverrunMode(opt.titleOM),
+			TextMaxX(available.Max.X),
+		)
+	}
+
 	return Text(
 		c, opt.title, start,
 		TextCellOpts(opt.titleCellOpts...),
@@ -175,7 +191,7 @@ func Border(c *canvas.Canvas, border image.Rectangle, opts ...BorderOption) erro
 		}
 	}
 
-	if opt.title != "" {
+	if opt.title != "" || opt.richTitle != nil {
 		return drawTitle(c, border, opt)
 	}
 	return nil

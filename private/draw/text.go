@@ -148,6 +148,58 @@ func TrimText(text string, maxCells int, om OverrunMode) (string, error) {
 	return b.String(), nil
 }
 
+func RichText(c *canvas.Canvas, text *cell.RichTextString, start image.Point, opts ...TextOption) error {
+	ar := c.Area()
+	if !start.In(ar) {
+		return fmt.Errorf("the requested start point %v falls outside of the provided canvas %v", start, ar)
+	}
+
+	opt := &textOptions{}
+	for _, o := range opts {
+		o.set(opt)
+	}
+
+	if opt.maxX < 0 || opt.maxX > ar.Max.X {
+		return fmt.Errorf("invalid TextMaxX(%v), must be a positive number that is <= canvas.width %v", opt.maxX, ar.Dx())
+	}
+
+	var wantMaxX int
+	if opt.maxX == 0 {
+		wantMaxX = ar.Max.X
+	} else {
+		wantMaxX = opt.maxX
+	}
+
+	maxCells := wantMaxX - start.X
+	trimmed, err := TrimText(text.Text(), maxCells, opt.overrunMode)
+	if err != nil {
+		return err
+	}
+
+	cur := start
+	lastOpts := opt.cellOpts
+
+	for i, r := range trimmed {
+
+		var cellOpts []cell.Option
+		richOpts := text.Opts(i)
+
+		if richOpts != nil {
+			cellOpts = append(opt.cellOpts, richOpts)
+			lastOpts = cellOpts
+		} else {
+			cellOpts = lastOpts
+		}
+
+		cells, err := c.SetCell(cur, r, cellOpts...)
+		if err != nil {
+			return err
+		}
+		cur = image.Point{cur.X + cells, cur.Y}
+	}
+	return nil
+}
+
 // Text prints the provided text on the canvas starting at the provided point.
 func Text(c *canvas.Canvas, text string, start image.Point, opts ...TextOption) error {
 	ar := c.Area()

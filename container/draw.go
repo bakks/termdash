@@ -104,6 +104,7 @@ func drawBorder(c *Container) error {
 	if err := draw.Border(cvs, ar,
 		draw.BorderLineStyle(c.opts.border),
 		draw.BorderTitle(c.opts.borderTitle, draw.OverrunModeThreeDot, titleCOpts...),
+		draw.RichBorderTitle(c.opts.richBorderTitle),
 		draw.BorderTitleAlign(c.opts.borderTitleHAlign),
 		draw.BorderCellOpts(cOpts...),
 	); err != nil {
