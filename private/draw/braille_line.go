@@ -112,6 +112,7 @@ func BrailleLine(bc *braille.Canvas, start, end image.Point, opts ...BrailleLine
 	for _, o := range opts {
 		o.set(opt)
 	}
+	opt.cellOpts = append(opt.cellOpts, cell.Bold())
 
 	points := brailleLinePoints(start, end)
 	for _, p := range points {

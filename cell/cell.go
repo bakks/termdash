@@ -142,23 +142,50 @@ func (this *RichTextString) AddText(txt string) *RichTextString {
 }
 
 func (this *RichTextString) ResetColor() *RichTextString {
-	newOpt := NewOptions(FgColor(this.fgColor))
-	this.addOpt(newOpt)
+	newOpt := FgColor(this.fgColor)
+	this.AddOpt(newOpt)
 	return this
 }
 
 func (this *RichTextString) SetFgColor(clr Color) *RichTextString {
-	newOpt := NewOptions(FgColor(clr))
-	this.addOpt(newOpt)
+	newOpt := FgColor(clr)
+	this.AddOpt(newOpt)
 	return this
 }
 
-// TODO merge options
-func (this *RichTextString) addOpt(opts *Options) {
-	newOpts := make([]*Options, len(this.text))
+func (this *RichTextString) AddOpt(opt Option) *RichTextString {
+	txtlen := len(this.text)
+
+	if len(this.opt) == txtlen+1 {
+		// if we already have an option at this index just update it
+		opt.Set(this.opt[txtlen])
+		return this
+	}
+
+	var lastOpt *Options
+	if len(this.opt) > 0 {
+		lastOpt = this.opt[len(this.opt)-1]
+	}
+
+	// make a new options slice with a longer length
+	newOpts := make([]*Options, txtlen+1)
 	copy(newOpts, this.opt)
-	newOpts = append(newOpts, opts)
+
+	var newOpt *Options
+	if lastOpt != nil {
+		// if we have a previous Options then copy and update it
+		n := *lastOpt
+		newOpt = &n
+		opt.Set(newOpt)
+	} else {
+		// otherwise create a new Options
+		newOpt = NewOptions(opt)
+	}
+
+	newOpts[txtlen] = newOpt
 	this.opt = newOpts
+
+	return this
 }
 
 func NewRichTextString(defaultFgColor Color) *RichTextString {
@@ -167,6 +194,6 @@ func NewRichTextString(defaultFgColor Color) *RichTextString {
 		opt:     []*Options{},
 		fgColor: defaultFgColor,
 	}
-	text.addOpt(NewOptions(FgColor(defaultFgColor)))
+	text.AddOpt(FgColor(defaultFgColor))
 	return text
 }
